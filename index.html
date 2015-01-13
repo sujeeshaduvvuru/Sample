@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Backbone+jQuery</title>
+</head>
+<header>
+<h1>JQUERY WITH BACKBONE</h1>
+</header>
+<body>
+
+<form id="new-tweet">
+<label>Author</label><input id="author-name" name="author-name" type="text"/>
+<label>Status </label><input id="status-updates" name="status-updates" type="text"/>
+<br/>
+<br/>
+<button>POST</button>
+<br/>
+<br/>
+<a href="">VIEW</a>
+</form>
+
+<hr/>
+<div id="tweets-container"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
+<script src="http://documentcloud.github.com/backbone/backbone-min.js"></script>
+<script>
+  // Your code goes here
+  (function($){
+  var Tweet=Backbone.Model.extend({
+  		defaults:function()
+  		{
+  			return{
+  				author:'',status:''
+  			}
+  		}
+
+  });
+  var TweetsList=Backbone.Collection.extend({
+  	model:Tweet
+
+  });
+  var tweets=new TweetsList();
+  var TweetView=Backbone.View.extend({
+  	model:new Tweet(),
+  	tagName:'div',
+  	events: {
+  		'click.edit':'edit',
+  		'click.delete':'del'
+  	},
+  	initialize: function()
+  	{
+  		this.template=_.template($('#tweet-template').html());
+  	},
+   	render : function()
+	{
+  		this.$el.html(this.template(this.model.toJSON()));
+  		return this;
+  	}
+   });
+  var TweetsView=Backbone.View.extend({
+  	model:tweets,
+  	el:$('#tweets-container'),
+  	initialize:function()
+  	{
+  		this.model.on('add',this.render,this);
+  	},
+  	render: function() {
+  		var self=this;
+  		self.$el.html('');
+  		_.each(this.model.toArray(),function(tweet,i){
+  			self.$el.append((new TweetView({model:tweet})).render().$el);
+
+  		});
+  		return this;
+  	}
+
+  });
+  $(document).ready(function()
+  {
+  	$('#new-tweet').submit(function(ev)
+  	{
+  	 var tweet=new Tweet({author: $('#author-name').val(),status: $('#status-updates').val()});
+  	 tweets.add(tweet);
+ 	 console.log(tweets.toJSON());
+
+
+ 	 return false;
+  	});
+		var appView=new TweetsView();	
+
+  });
+ 
+  })(jQuery);
+
+</script>
+
+<!-- templates -->
+<script type="text/template" id="tweet-template">
+<span class="author"> <%= author %>:</span>
+ <span class="status"> <%= status %> </span>
+
+</script>
+</body>
+</html>
